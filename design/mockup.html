@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en" data-type="t1" data-pal="p1">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resource Hub mock-up</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Geist+Mono:wght@400;500&family=JetBrains+Mono:wght@400;500&family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Host+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap" rel="stylesheet">
+<style>
+/* ---------- tokens ---------- */
+:root{
+  --gutter:clamp(16px,2.2vw,32px);
+  --t-mega:clamp(3rem,1rem + 8.5vw,9.5rem);
+  --t-xl:clamp(2.25rem,1.3rem + 3.8vw,4.75rem);
+  --t-l:clamp(1.5rem,1.2rem + 1.4vw,2.4rem);
+  --t-m:clamp(1.15rem,1.05rem + .45vw,1.45rem);
+  --t-body:clamp(1rem,.96rem + .2vw,1.125rem);
+  --t-s:.875rem; --t-xs:.75rem;
+  --ease:cubic-bezier(.16,1,.3,1); --snap:cubic-bezier(.34,1.56,.64,1);
+  --r:6px;
+}
+/* palettes (light) */
+[data-pal="p1"]{--ground:#F2F3F5;--ink:#0D0F12;--muted:#596070;--line:rgba(13,15,18,.13);--accent:#2F4BFF;--on-accent:#fff;--panel:#E8EAEE;--hero:var(--ground)}
+[data-pal="p2"]{--ground:#F7F7F4;--ink:#111;--muted:#4F4F4F;--line:rgba(17,17,17,.14);--accent:#111;--on-accent:#FFD84D;--panel:#ECECE7;--hero:#FFD84D}
+[data-pal="p3"]{--ground:#fff;--ink:#000;--muted:#5C5C5C;--line:rgba(0,0,0,.14);--accent:#000;--on-accent:#fff;--panel:#F1F1F1;--hero:var(--ground)}
+/* dark */
+[data-theme="dark"][data-pal="p1"]{--ground:#0B0D10;--ink:#E6E8EC;--muted:#9AA1AD;--line:rgba(230,232,236,.14);--accent:#8C9BFF;--on-accent:#0B0D10;--panel:#14171C;--hero:var(--ground)}
+[data-theme="dark"][data-pal="p2"]{--ground:#121212;--ink:#EDEDED;--muted:#A3A3A3;--line:rgba(237,237,237,.14);--accent:#FFD84D;--on-accent:#121212;--panel:#1C1C1C;--hero:#121212}
+[data-theme="dark"][data-pal="p3"]{--ground:#000;--ink:#fff;--muted:#A6A6A6;--line:rgba(255,255,255,.16);--accent:#fff;--on-accent:#000;--panel:#111;--hero:var(--ground)}
+/* type options */
+[data-type="t1"]{--f-display:"Archivo",sans-serif;--f-text:"Archivo",sans-serif;--f-mono:"Geist Mono",monospace;--disp-w:800;--disp-stretch:125%;--disp-track:-.035em}
+[data-type="t2"]{--f-display:"Switzer",sans-serif;--f-text:"Switzer",sans-serif;--f-mono:"JetBrains Mono",monospace;--disp-w:600;--disp-stretch:100%;--disp-track:-.045em}
+[data-type="t3"]{--f-display:"Bricolage Grotesque",sans-serif;--f-text:"Host Grotesk",sans-serif;--f-mono:"IBM Plex Mono",monospace;--disp-w:700;--disp-stretch:100%;--disp-track:-.04em}
+
+*{box-sizing:border-box;margin:0}
+html{background:var(--ground);color:var(--ink);font-family:var(--f-text);font-size:100%;-webkit-font-smoothing:antialiased;transition:background-color .4s,color .4s}
+body{background:var(--ground);font-size:var(--t-body);line-height:1.55}
+::selection{background:var(--accent);color:var(--on-accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+a{color:inherit}
+code,kbd,pre{font-family:var(--f-mono);font-size:.9em}
+.wrap{padding-inline:var(--gutter)}
+.skip{position:absolute;left:-999px}.skip:focus{left:var(--gutter);top:8px;background:var(--ink);color:var(--ground);padding:6px 10px;z-index:99}
+
+/* ---------- mock-up control bar (not part of the design) ---------- */
+.ctl{position:fixed;z-index:50;right:12px;bottom:12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;max-width:calc(100vw - 24px);padding:8px;border-radius:10px;background:#1b1d22;color:#fff;font:500 12px/1 system-ui,sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+.ctl b{opacity:.6;font-weight:500;margin-left:6px}
+.ctl button{font:inherit;color:#fff;background:#2c3038;border:0;border-radius:6px;padding:7px 9px;cursor:pointer}
+.ctl button[aria-pressed="true"]{background:#fff;color:#111}
+
+/* ---------- hover system ---------- */
+.roll{display:inline-flex;overflow:hidden;height:1.25em;line-height:1.25;vertical-align:bottom}
+.roll>span{display:block;transition:translate .42s var(--ease)}
+.roll>span::after{content:attr(data-t);display:block}
+a:hover .roll>span,button:hover .roll>span,a:focus-visible .roll>span{translate:0 -50%}
+.draw{text-decoration:none;background:linear-gradient(currentColor,currentColor) 0 100%/0 1px no-repeat;transition:background-size .42s var(--ease)}
+.draw:hover,.draw:focus-visible{background-size:100% 1px}
+
+/* ---------- header ---------- */
+header.top{display:flex;justify-content:space-between;align-items:center;padding-block:18px;font-size:var(--t-s);position:relative;z-index:2}
+.brand{font-weight:600;text-decoration:none;letter-spacing:-.01em}
+.brand i{font-style:normal;display:inline-block;width:.55em;height:.55em;border-radius:50%;background:var(--accent);margin-right:.45em;translate:0 -.05em}
+nav ul{display:flex;gap:22px;list-style:none;padding:0}
+nav a{text-decoration:none}
+
+/* ---------- hero ---------- */
+.hero{background:var(--hero);min-height:92svh;display:grid;grid-template-rows:auto 1fr auto;transition:background-color .4s}
+.hero h1{font-family:var(--f-display);font-weight:var(--disp-w);font-stretch:var(--disp-stretch);letter-spacing:var(--disp-track);font-size:var(--t-mega);line-height:.9;margin-left:-.05em;max-width:14ch;text-wrap:balance;align-self:end;padding-bottom:clamp(24px,4vw,48px)}
+.hero h1 .ln{display:block;overflow:hidden;padding-bottom:.06em}
+.hero h1 .ln>span{display:block;translate:0 105%;transition:translate .9s var(--ease)}
+.ready .hero h1 .ln>span{translate:0 0}
+.ready .hero h1 .ln:nth-child(2)>span{transition-delay:.06s}.ready .hero h1 .ln:nth-child(3)>span{transition-delay:.12s}
+.search{display:flex;align-items:center;gap:12px;max-width:760px;padding:16px 18px;border:1.5px solid var(--ink);border-radius:var(--r);background:var(--ground);cursor:text;font-size:var(--t-m)}
+.search .pr{font-family:var(--f-mono);color:var(--accent);font-weight:500}
+[data-pal="p2"]:not([data-theme="dark"]) .search .pr{color:var(--ink)}
+.search input{flex:1;min-width:0;border:0;background:none;font:inherit;color:inherit;outline:none}
+.search input::placeholder{color:var(--muted)}
+.search kbd{font-size:var(--t-xs);color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:3px 6px}
+.search:focus-within{outline:2px solid var(--accent);outline-offset:3px}
+.facts{display:flex;flex-wrap:wrap;gap:6px 28px;padding-block:22px 28px;font-size:var(--t-s);color:var(--muted);font-variant-numeric:tabular-nums}
+.facts strong{color:var(--ink);font-weight:600}
+.hint{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;font-size:var(--t-s)}
+.chip{font:inherit;color:inherit;background:none;border:1px solid var(--line);border-radius:var(--r);padding:6px 10px;cursor:pointer;text-decoration:none;transition:border-color .2s,background-color .2s}
+.chip:hover{border-color:var(--ink)}
+
+/* ---------- section heads ---------- */
+.sec{padding-block:clamp(72px,10vw,140px)}
+.kicker{font-size:var(--t-s);color:var(--muted)}
+.sec h2{font-family:var(--f-display);font-weight:var(--disp-w);font-stretch:var(--disp-stretch);letter-spacing:var(--disp-track);font-size:var(--t-xl);line-height:.95;max-width:18ch;margin:.2em 0 .5em -.03em}
+.lede{max-width:38rem;color:var(--muted)}
+
+/* ---------- start here ---------- */
+.steps{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:var(--gutter);margin-top:48px;counter-reset:s}
+.steps li{list-style:none;grid-column:span 4;border-top:1px solid var(--ink);padding-top:16px}
+.steps h3{font-size:var(--t-m);font-weight:600;letter-spacing:-.01em;margin-bottom:6px}
+.steps p{color:var(--muted);font-size:var(--t-s);max-width:30ch}
+.steps code{display:inline-block;margin-top:10px;background:var(--panel);padding:4px 8px;border-radius:4px}
+.steps li:nth-child(2){margin-top:48px}.steps li:nth-child(3){margin-top:96px}
+.steps .n{font-family:var(--f-mono);font-size:var(--t-xs);color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* ---------- session line (signature) ---------- */
+.session{display:grid;grid-template-columns:minmax(56px,1fr) 11fr;gap:var(--gutter)}
+.rail{position:relative}
+.rail .track{position:sticky;top:0;height:100svh}
+.rail .track::before{content:"";position:absolute;left:50%;top:12svh;bottom:12svh;width:1px;background:var(--line)}
+.rail .fill{position:absolute;left:50%;top:12svh;width:1px;height:calc(76svh * var(--p,0));background:var(--ink);transition:height .1s linear}
+.rail .cur{position:absolute;left:50%;top:calc(12svh + 76svh * var(--p,0));width:13px;height:13px;margin:-6.5px 0 0 -6.5px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 6px color-mix(in srgb,var(--accent) 18%,transparent);animation:breathe 2.4s ease-in-out infinite}
+@keyframes breathe{50%{box-shadow:0 0 0 10px color-mix(in srgb,var(--accent) 8%,transparent)}}
+.events{list-style:none;padding:0}
+.ev{min-height:62svh;display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:var(--gutter);align-content:center;border-top:1px solid var(--line);padding-block:40px}
+.ev header{grid-column:1 / span 6}
+.ev .when{font-family:var(--f-mono);font-size:var(--t-s);color:var(--muted);display:flex;align-items:center;gap:10px}
+.ev .when::before{content:"";width:9px;height:9px;border-radius:50%;border:1.5px solid var(--muted);transition:all .2s var(--snap)}
+.ev h3{font-family:var(--f-display);font-weight:var(--disp-w);font-stretch:100%;letter-spacing:var(--disp-track);font-size:var(--t-l);line-height:1;margin:.35em 0 .35em -.02em;transition:font-stretch .5s var(--ease),color .3s}
+.ev p{color:var(--muted);max-width:34ch}
+.ev ul{grid-column:7 / span 5;list-style:none;padding:0;display:flex;flex-direction:column;gap:2px;align-self:center}
+.ev ul a{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);text-decoration:none;font-size:var(--t-s);opacity:.35;translate:12px 0;transition:opacity .3s,translate .45s var(--snap)}
+.ev ul a small{font-family:var(--f-mono);color:var(--muted)}
+.ev.on .when{color:var(--ink)}
+.ev.on .when::before{background:var(--accent);border-color:var(--accent);scale:1.25}
+.ev.on h3{font-stretch:var(--disp-stretch)}
+.ev.on ul a{opacity:1;translate:0 0}
+.ev.on ul li:nth-child(2) a{transition-delay:.04s}.ev.on ul li:nth-child(3) a{transition-delay:.08s}.ev.on ul li:nth-child(4) a{transition-delay:.12s}
+.ev ul a:hover{color:var(--accent)}
+
+/* ---------- stacks ---------- */
+.stacks{display:flex;flex-wrap:wrap;gap:0 .5em;font-family:var(--f-display);font-weight:var(--disp-w);font-size:var(--t-l);line-height:1.2;letter-spacing:var(--disp-track);margin-top:32px}
+.stacks a{text-decoration:none;color:var(--muted);transition:color .25s}
+.stacks a:hover,.stacks a:focus-visible{color:var(--ink)}
+.stacks sup{font-family:var(--f-mono);font-size:var(--t-xs);font-weight:400;letter-spacing:0;vertical-align:top;margin-left:2px}
+
+/* ---------- docs page ---------- */
+.divider{background:var(--ink);color:var(--ground);text-align:center;padding:14px;font-size:var(--t-s)}
+.doc{display:grid;grid-template-columns:220px minmax(0,1fr) 200px;gap:calc(var(--gutter)*2);padding-block:48px 120px}
+.side{font-size:var(--t-s);position:sticky;top:20px;align-self:start}
+.side h4{font-size:var(--t-xs);color:var(--muted);font-weight:500;margin:22px 0 8px}
+.side a{display:flex;justify-content:space-between;padding:5px 0;text-decoration:none;color:var(--muted)}
+.side a[aria-current]{color:var(--ink);font-weight:600}
+.side a small{font-variant-numeric:tabular-nums}
+.crumbs{font-size:var(--t-s);color:var(--muted)}
+.doc h1{font-family:var(--f-display);font-weight:var(--disp-w);font-stretch:100%;letter-spacing:-.025em;font-size:var(--t-l);line-height:1.05;margin:.4em 0 .3em;overflow-wrap:anywhere}
+.tags{display:flex;flex-wrap:wrap;gap:6px;font-size:var(--t-xs)}
+.tag{border:1px solid var(--line);border-radius:999px;padding:3px 9px}
+.tag.type{background:var(--ink);color:var(--ground);border-color:var(--ink)}
+.doc .summary{font-size:var(--t-m);max-width:40rem;margin:20px 0 28px;line-height:1.45}
+.doc h2{font-size:var(--t-m);font-weight:600;margin:40px 0 10px;letter-spacing:-.01em}
+.doc main p{max-width:40rem}
+.tabs{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;max-width:44rem}
+.tabs [role="tablist"]{display:flex;border-bottom:1px solid var(--line);background:var(--panel)}
+.tabs [role="tab"]{font:inherit;font-size:var(--t-s);color:var(--muted);background:none;border:0;padding:10px 14px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs [role="tab"][aria-selected="true"]{color:var(--ink);border-color:var(--accent)}
+.tabs pre{display:flex;justify-content:space-between;gap:16px;align-items:start;padding:16px;overflow-x:auto;font-size:.85rem;line-height:1.6}
+.copy{font:500 var(--t-xs) var(--f-text);color:var(--ink);border:1px solid var(--line);background:var(--ground);border-radius:4px;padding:5px 9px;cursor:pointer;flex:none}
+.copy:hover{border-color:var(--ink)}
+.toc{font-size:var(--t-s);position:sticky;top:20px;align-self:start;color:var(--muted)}
+.toc a{display:block;padding:4px 0;text-decoration:none}.toc a:hover{color:var(--ink)}
+.toc .ver{margin-top:28px;padding-top:14px;border-top:1px solid var(--line);font-size:var(--t-xs)}
+
+/* ---------- loader ---------- */
+.loader{position:fixed;inset:0;z-index:40;background:var(--ink);color:var(--ground);display:grid;place-items:end start;padding:var(--gutter);transition:clip-path .8s var(--ease);clip-path:inset(0 0 0 0)}
+.loader .c{font-family:var(--f-display);font-weight:var(--disp-w);font-stretch:var(--disp-stretch);font-size:var(--t-mega);line-height:.9;letter-spacing:var(--disp-track);font-variant-numeric:tabular-nums}
+.loader small{display:block;font-family:var(--f-mono);font-size:var(--t-s);opacity:.7;margin-bottom:8px}
+.loader.done{clip-path:inset(0 0 100% 0)}
+
+/* ---------- responsive ---------- */
+@media (max-width:900px){
+  .doc{grid-template-columns:minmax(0,1fr)}.side,.toc{position:static}.side{display:none}.toc{display:none}
+  .steps li{grid-column:1 / -1;margin-top:0!important}
+  .ev{grid-template-columns:minmax(0,1fr);min-height:auto;padding-block:56px}.ev header,.ev ul{grid-column:1 / -1}
+  .session{grid-template-columns:28px minmax(0,1fr);gap:14px}
+  nav ul li:not(:last-child){display:none}
+}
+/* ---------- reduced motion: designed, not removed ---------- */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition:none!important;animation:none!important}
+  .loader{display:none}
+  .hero h1 .ln>span{translate:0 0}
+  .ev ul a{opacity:1;translate:0 0}
+  .ev .when::before{background:var(--accent);border-color:var(--accent)}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<div class="loader" aria-hidden="true"><div><small>SessionStart · loading index</small><span class="c" id="count">0</span></div></div>
+
+<div class="ctl" role="group" aria-label="Mock-up options (not part of the design)">
+  <b>Type</b><button data-k="type" data-v="t1">T1 Archivo</button><button data-k="type" data-v="t2">T2 Switzer</button><button data-k="type" data-v="t3">T3 Bricolage</button>
+  <b>Colour</b><button data-k="pal" data-v="p1">P1 Signal</button><button data-k="pal" data-v="p2">P2 Field</button><button data-k="pal" data-v="p3">P3 Mono</button>
+  <b>Theme</b><button data-k="theme" data-v="light">Light</button><button data-k="theme" data-v="dark">Dark</button>
+  <button id="replay" title="Replay loader">↻ loader</button>
+</div>
+
+<section class="hero wrap" aria-labelledby="h1">
+  <header class="top">
+    <a class="brand" href="#"><i aria-hidden="true"></i>Claude Resource Hub</a>
+    <nav aria-label="Main"><ul>
+      <li><a href="#types"><span class="roll"><span data-t="Resources">Resources</span></span></a></li>
+      <li><a href="#start"><span class="roll"><span data-t="Guides">Guides</span></span></a></li>
+      <li><a href="#doc"><span class="roll"><span data-t="Cheatsheet">Cheatsheet</span></span></a></li>
+      <li><a href="#doc"><span class="roll"><span data-t="Search ⌘K">Search ⌘K</span></span></a></li>
+    </ul></nav>
+  </header>
+  <h1 id="h1"><span class="ln"><span>Every Claude Code</span></span><span class="ln"><span>resource, at the</span></span><span class="ln"><span>moment it acts.</span></span></h1>
+  <div>
+    <label class="search" for="q">
+      <span class="pr" aria-hidden="true">/</span>
+      <input id="q" type="search" placeholder="search 137 resources: hooks, code review, Spring…" autocomplete="off">
+      <kbd>Ctrl K</kbd>
+    </label>
+    <div class="hint"><span class="kicker" style="padding:6px 0">Try</span>
+      <a class="chip" href="#ev-pre">block dangerous commands</a><a class="chip" href="#types">code review</a><a class="chip" href="#stacks">Java / Spring</a><a class="chip" href="#ev-tool">MCP for GitHub</a>
+    </div>
+    <p class="facts"><span><strong>137</strong> resources</span><span><strong>7</strong> types</span><span><strong>10</strong> stacks</span><span>Install for PowerShell and Bash</span><span>Verified Nov 2026</span></p>
+  </div>
+</section>
+
+<main id="main">
+<section class="sec wrap" id="start" aria-labelledby="h-start">
+  <p class="kicker">New to Claude Code</p>
+  <h2 id="h-start">Start in three moves.</h2>
+  <ol class="steps">
+    <li><span class="n">1</span><h3>Install the CLI</h3><p>One command on Windows, macOS or Linux, then sign in.</p><code>irm https://claude.ai/install.ps1 | iex</code></li>
+    <li><span class="n">2</span><h3>Give it your rules</h3><p>A CLAUDE.md in the project root. Pick a template for your stack.</p><code>/init</code></li>
+    <li><span class="n">3</span><h3>Add one resource</h3><p>A guard hook is the safest first win.</p><code>/plugin install code-review@claude-plugins-official</code></li>
+  </ol>
+</section>
+
+<section class="wrap" id="types" aria-labelledby="h-types">
+  <p class="kicker">Seven types, one session</p>
+  <h2 id="h-types" class="sec" style="padding:0;font-family:var(--f-display);font-weight:var(--disp-w);font-stretch:var(--disp-stretch);letter-spacing:var(--disp-track);font-size:var(--t-xl);line-height:.95;max-width:16ch;margin:.2em 0 .4em -.03em">Scroll through a session. See what fires where.</h2>
+  <p class="lede">Each kind of resource acts at a specific moment of a Claude Code session. Follow the line.</p>
+  <div class="session">
+    <div class="rail" aria-hidden="true"><div class="track"><div class="fill"></div><div class="cur"></div></div></div>
+    <ol class="events">
+      <li class="ev"><header><span class="when">before the session</span><h3>Setup</h3><p>Plugins bundle skills, agents and hooks. Harnesses decide where Claude runs.</p></header>
+        <ul><li><a href="#doc">code-review <small>plugin</small></a></li><li><a href="#doc">Headless mode, claude -p <small>harness</small></a></li><li><a href="#doc">GitHub Action <small>harness</small></a></li><li><a href="#doc">16 more →<small></small></a></li></ul></li>
+      <li class="ev"><header><span class="when">SessionStart</span><h3>Context loads</h3><p>CLAUDE.md, memory and start-up hooks give Claude the project's rules.</p></header>
+        <ul><li><a href="#doc">CLAUDE.md for Java + JSF <small>template</small></a></li><li><a href="#doc">session-branch-check <small>hook</small></a></li><li><a href="#doc">Plan mode <small>harness</small></a></li></ul></li>
+      <li class="ev"><header><span class="when">UserPromptSubmit</span><h3>You ask</h3><p>Slash commands run built-in workflows. Skills load when the task matches.</p></header>
+        <ul><li><a href="#doc">/code-review <small>command</small></a></li><li><a href="#doc">/rewind <small>command</small></a></li><li><a href="#doc">spring-boot-conventions <small>skill</small></a></li><li><a href="#doc">40 more →<small></small></a></li></ul></li>
+      <li class="ev"><header><span class="when">SubagentStart</span><h3>Work is delegated</h3><p>Agents take a focused job in their own context and report back.</p></header>
+        <ul><li><a href="#doc">code-reviewer <small>agent</small></a></li><li><a href="#doc">test-writer <small>agent</small></a></li><li><a href="#doc">Explore <small>built-in</small></a></li></ul></li>
+      <li class="ev" id="ev-pre"><header><span class="when">PreToolUse</span><h3>A guard checks</h3><p>Hooks run before a tool and can block it with exit code 2.</p></header>
+        <ul><li><a href="#doc">block-dangerous-commands <small>hook</small></a></li><li><a href="#doc">secret-guard <small>hook</small></a></li><li><a href="#doc">subagent-command-allowlist <small>hook</small></a></li></ul></li>
+      <li class="ev" id="ev-tool"><header><span class="when">tool call</span><h3>Tools reach out</h3><p>MCP servers connect Claude to docs, repos, browsers and databases.</p></header>
+        <ul><li><a href="#doc">context7 <small>mcp</small></a></li><li><a href="#doc">github <small>mcp</small></a></li><li><a href="#doc">playwright <small>mcp</small></a></li><li><a href="#doc">14 more →<small></small></a></li></ul></li>
+      <li class="ev"><header><span class="when">PostToolUse</span><h3>Code is tidied</h3><p>Hooks format and compile right after each edit, and feed errors back.</p></header>
+        <ul><li><a href="#doc">auto-format <small>hook</small></a></li><li><a href="#doc">compile-check <small>hook</small></a></li></ul></li>
+      <li class="ev"><header><span class="when">Stop</span><h3>Done means tested</h3><p>A stop hook can send Claude back if the tests never ran.</p></header>
+        <ul><li><a href="#doc">tests-before-stop <small>hook</small></a></li><li><a href="#doc">desktop-notify <small>hook</small></a></li></ul></li>
+    </ol>
+  </div>
+</section>
+
+<section class="sec wrap" id="stacks" aria-labelledby="h-stacks">
+  <p class="kicker">Browse by stack</p>
+  <h2 id="h-stacks">Your stack, filtered.</h2>
+  <p class="stacks"><a href="#doc">Java / Spring<sup>31</sup></a><a href="#doc">JSF<sup>9</sup></a><a href="#doc">React<sup>24</sup></a><a href="#doc">Angular<sup>12</sup></a><a href="#doc">Astro<sup>10</sup></a><a href="#doc">.NET<sup>14</sup></a><a href="#doc">Python<sup>18</sup></a><a href="#doc">Node<sup>22</sup></a><a href="#doc">SQL<sup>11</sup></a><a href="#doc">Mobile<sup>8</sup></a></p>
+</section>
+</main>
+
+<div class="divider" id="doc">Below: a resource page (calm docs layout, same type and colour system)</div>
+<div class="doc wrap">
+  <aside class="side" aria-label="Filters">
+    <h4>Type</h4>
+    <a href="#">All<small>137</small></a><a href="#">Commands<small>24</small></a><a href="#">Agents<small>13</small></a><a href="#">Skills<small>36</small></a><a href="#" aria-current="page">Hooks<small>8</small></a><a href="#">MCP<small>17</small></a><a href="#">Plugins<small>33</small></a><a href="#">Harness<small>6</small></a>
+    <h4>Origin</h4><a href="#">Official</a><a href="#">Community</a><a href="#">Ours</a>
+  </aside>
+  <article>
+    <p class="crumbs"><a class="draw" href="#">Resources</a> / <a class="draw" href="#">Hooks</a></p>
+    <h1>block-dangerous-commands</h1>
+    <div class="tags"><span class="tag type">hook</span><span class="tag">PreToolUse</span><span class="tag">ours</span><span class="tag">all stacks</span></div>
+    <p class="summary">Stops Claude before it runs a force push, a hard reset, a broad recursive delete or a <code>DROP TABLE</code>, and tells it why.</p>
+    <h2>Install</h2>
+    <div class="tabs">
+      <div role="tablist" aria-label="Shell"><button role="tab" aria-selected="true" id="tb1">PowerShell</button><button role="tab" aria-selected="false" id="tb2">Bash</button></div>
+      <pre id="code"><code>New-Item -ItemType Directory -Force .claude\hooks
+Copy-Item block-dangerous-commands.mjs .claude\hooks\</code><button class="copy">Copy</button></pre>
+    </div>
+    <h2>What it does</h2>
+    <p>Runs before every Bash or PowerShell tool call. If the command matches a dangerous pattern, it exits with code 2. Claude Code cancels the call and shows Claude the reason, so it can pick a safer path.</p>
+    <h2>Example</h2>
+    <p>You ask Claude to "clean up the branch". It tries <code>git reset --hard origin/main</code>. The hook blocks it: <em>"hard reset discards uncommitted work. Ask the user first."</em></p>
+  </article>
+  <aside class="toc" aria-label="On this page">
+    <a href="#">Install</a><a href="#">What it does</a><a href="#">Example</a><a href="#">Notes</a><a href="#">Related</a>
+    <p class="ver">Last verified 2026-11-12<br>Claude Code 2.1.322</p>
+  </aside>
+</div>
+
+<script>
+const root=document.documentElement;
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+// mock-up controls
+const state={type:'t1',pal:'p1',theme:matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'};
+function apply(){root.dataset.type=state.type;root.dataset.pal=state.pal;root.dataset.theme=state.theme;
+  document.querySelectorAll('.ctl [data-k]').forEach(b=>b.setAttribute('aria-pressed',state[b.dataset.k]===b.dataset.v));}
+document.querySelectorAll('.ctl [data-k]').forEach(b=>b.addEventListener('click',()=>{state[b.dataset.k]=b.dataset.v;apply()}));
+apply();
+// loader: counts to the real number of entries, then wipes up (max ~1.6 s)
+const L=document.querySelector('.loader'),C=document.getElementById('count');
+function runLoader(){
+  if(reduce){root.classList.add('ready');return}
+  root.classList.remove('ready');L.classList.remove('done');const t0=performance.now(),D=1100;
+  (function tick(t){const p=Math.min(1,(t-t0)/D),e=1-Math.pow(1-p,3);C.textContent=Math.round(137*e);
+    if(p<1)requestAnimationFrame(tick);else setTimeout(()=>{L.classList.add('done');root.classList.add('ready')},180)})(t0);
+}
+runLoader();document.getElementById('replay').onclick=runLoader;
+// session line: scroll progress drives the cursor; events "fire" as they cross the middle
+const sess=document.querySelector('.session'),evs=[...document.querySelectorAll('.ev')];
+function onScroll(){const r=sess.getBoundingClientRect(),vh=innerHeight;
+  const p=Math.min(1,Math.max(0,(vh*.5-r.top)/(r.height-vh*.2)));sess.style.setProperty('--p',p.toFixed(4));
+  evs.forEach(ev=>{const b=ev.getBoundingClientRect();ev.classList.toggle('on',reduce||b.top<vh*.62)})}
+addEventListener('scroll',onScroll,{passive:true});onScroll();
+// tabs
+const code=document.getElementById('code').firstChild;
+const snippets={tb1:'New-Item -ItemType Directory -Force .claude\\hooks\nCopy-Item block-dangerous-commands.mjs .claude\\hooks\\',tb2:'mkdir -p .claude/hooks\ncp block-dangerous-commands.mjs .claude/hooks/'};
+document.querySelectorAll('[role=tab]').forEach(t=>t.onclick=()=>{document.querySelectorAll('[role=tab]').forEach(x=>x.setAttribute('aria-selected',x===t));code.textContent=snippets[t.id]});
+document.querySelector('.copy').onclick=e=>{navigator.clipboard?.writeText(code.textContent);e.target.textContent='Copied';setTimeout(()=>e.target.textContent='Copy',1200)};
+addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'||e.key==='/'&&document.activeElement.tagName!=='INPUT'){e.preventDefault();document.getElementById('q').focus()}});
+</script>
+</body>
+</html>

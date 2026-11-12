@@ -1,0 +1,107 @@
+---
+// Shows one of our agent files (resources-src/agents/<slug>.md) with a note beside each part:
+// what every frontmatter field does, and how the prompt below it is built.
+import { readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+
+interface Props { slug: string; full?: boolean; }
+const { slug, full = true } = Astro.props;
+const file = join(process.cwd(), 'resources-src', 'agents', `${slug}.md`);
+const raw = existsSync(file) ? readFileSync(file, 'utf8').replace(/\r\n/g, '\n') : '';
+const m = raw.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
+const fm = m?.[1] ?? '';
+const body = (m?.[2] ?? '').trim();
+
+// Frontmatter: group each top-level key with its indented continuation lines.
+const fields: { key: string; text: string }[] = [];
+for (const line of fm.split('\n')) {
+  const k = line.match(/^([A-Za-z]+):/);
+  if (k) fields.push({ key: k[1], text: line });
+  else if (fields.length) fields[fields.length - 1].text += '\n' + line;
+}
+const toolsLine = fields.find((f) => f.key === 'tools')?.text ?? '';
+const canEdit = /\b(Edit|Write)\b/.test(toolsLine);
+
+const fieldNote: Record<string, [string, string]> = {
+  name: ['Its name', `How you call it: "use the ${slug} agent", or type @agent-${slug} to make sure it runs.`],
+  description: ['When Claude uses it', 'Claude reads this to decide when to hand a job to this agent. Say what it does and when, in plain words.'],
+  tools: canEdit
+    ? ['What it may use', 'Edit and Write are in the list, so this agent can change files. Its prompt says when it may.']
+    : ['What it may use', 'No Edit or Write in the list, so it cannot change a file whatever it decides. This line is the real guarantee; "never edit" in the prompt is only advice.'],
+  disallowedTools: ['What it may not use', 'Tools taken away from the ones it would otherwise get.'],
+  model: ['Which model', 'haiku is fast and cheap for simple jobs like running tests; opus for hard reasoning. Leave it out to use the same model as your session.'],
+  hooks: ['Its own guard', 'A hook just for this agent. Before every shell command a script checks it against an allowlist. Anything else is blocked with exit code 2.'],
+  skills: ['Skills it starts with', 'The full text of these skills is loaded when it starts, so it already knows your patterns.'],
+  memory: ['What it remembers', 'A memory folder it keeps between sessions. project = shared in the repo, user = yours on every project.'],
+  color: ['Its colour', 'The colour of its label in the terminal, so you can see which agent is working.'],
+  permissionMode: ['Permission mode', 'plan = may only read and propose; acceptEdits = edits without asking.'],
+  maxTurns: ['A limit', 'It stops after this many steps, so a stuck agent cannot loop forever.'],
+  isolation: ['Its own copy', 'worktree = it works in a temporary git worktree, away from your files.'],
+};
+
+// Body: the role paragraph, then one block per "## heading".
+const blocks: { head: string; text: string }[] = [];
+let cur = { head: '', text: '' };
+for (const line of body.split('\n')) {
+  if (/^##\s/.test(line)) { blocks.push(cur); cur = { head: line.replace(/^##\s+/, ''), text: line }; }
+  else cur.text += (cur.text ? '\n' : '') + line;
+}
+blocks.push(cur);
+const bodyNote = (h: string): [string, string] => {
+  if (!h) return ['Its role', 'Everything under the --- line is its instructions. It starts with who it is. The agent does not see your chat, only this and the job Claude gives it.'];
+  if (/before|collect|source|first|context/i.test(h)) return ['What to read first', 'So it judges by your project\'s rules, not general taste.'];
+  if (/rule|constraint|limit|never|don/i.test(h)) return ['Its limits', 'What it must not do, and how careful to be. Repeats the tools line and adds judgement.'];
+  if (/output|report|format|answer/i.test(h)) return ['The shape of its answer', 'A fixed format, so you and the main session can act on it straight away.'];
+  if (/memory/i.test(h)) return ['What to remember', 'What it writes to its memory for next time.'];
+  if (/plan|approval/i.test(h)) return ['Plan first', 'It shows a plan and stops, so you approve before any file changes.'];
+  return ['Its steps', 'Numbered steps in order. Agents follow a short list far better than a paragraph.'];
+};
+const short = (t: string, n: number) => { const ls = t.trim().split('\n'); return ls.length > n ? ls.slice(0, n).join('\n') + '\n…' : t.trim(); };
+---
+{raw && (
+  <div class="anatomy">
+    <ol class="an-rows">
+      <li class="an-row fence"><pre>---</pre><p class="an-note"><b>Settings</b> The part between the two --- lines is YAML. Only name and description are required.</p></li>
+      {fields.map((f) => (
+        <li class="an-row">
+          <pre>{f.key === 'description' ? short(f.text, 1).slice(0, 170) + (f.text.length > 170 ? '…' : '') : f.text}</pre>
+          <p class="an-note"><b>{fieldNote[f.key]?.[0] ?? f.key}</b> {fieldNote[f.key]?.[1] ?? ''}</p>
+        </li>
+      ))}
+      <li class="an-row fence"><pre>---</pre><p class="an-note"><b>Instructions</b> Below this line is the agent's own prompt, in plain Markdown.</p></li>
+      {blocks.filter((b) => b.text.trim()).map((b) => {
+        const [label, note] = bodyNote(b.head);
+        return (
+          <li class="an-row">
+            <pre>{short(b.text, b.head ? 4 : 3)}</pre>
+            <p class="an-note"><b>{label}</b> {note}</p>
+          </li>
+        );
+      })}
+    </ol>
+    {full && (
+      <details class="an-full">
+        <summary>Show the whole file ({raw.split('\n').length} lines)</summary>
+        <pre>{raw.trim()}</pre>
+      </details>
+    )}
+  </div>
+)}
+
+<style is:global>
+  .anatomy { border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); overflow: hidden; }
+  .an-rows { list-style: none; margin: 0; padding: 0; }
+  .an-row { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); border-bottom: 1px solid var(--line); }
+  .an-row pre { margin: 0; padding: 12px 16px; font: 12.5px/1.6 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; background: var(--code-bg); border-right: 1px solid var(--line); color: var(--ink); }
+  .an-row.fence pre { color: var(--accent); font-weight: 700; }
+  .an-note { margin: 0; padding: 12px 16px; font-size: 14px; line-height: 1.5; color: var(--muted); }
+  .an-note b { display: block; color: var(--ink); font-size: 13px; margin-bottom: 2px; }
+  .an-full { padding: 12px 16px; }
+  .an-full summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+  .an-full pre { margin: 12px 0 0; padding: 14px; font: 12.5px/1.6 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px; max-height: 480px; overflow-y: auto; }
+  @media (max-width: 720px) {
+    .an-row { grid-template-columns: minmax(0, 1fr); }
+    .an-row pre { border-right: 0; }
+    .an-note { padding-top: 8px; }
+  }
+</style>

@@ -1,0 +1,161 @@
+---
+import Base from '../layouts/Base.astro';
+import SessionBar from '../components/SessionBar.astro';
+import Terminal from '../components/Terminal.astro';
+import AgentAnatomy from '../components/AgentAnatomy.astro';
+import Code from '../components/Code.astro';
+import { url } from '../data/site';
+import { DEMOS } from '../data/terminals';
+
+const compare = [
+  { id: 'code-reviewer', job: 'Reviews your change and reports.', tools: 'Read, Grep, Glob, Bash', edits: false, model: 'same as you', guard: 'Hook: read-only git and search only' },
+  { id: 'implementer', job: 'Builds one ticket, test first.', tools: '… + Edit, Write', edits: true, model: 'same as you', guard: 'Prompt: plan first, wait for your yes' },
+  { id: 'test-runner', job: 'Runs the tests and reports.', tools: 'Read, Grep, Glob, Bash', edits: false, model: 'haiku (cheap)', guard: 'Hook: builds and tests, no git changes' },
+];
+
+const template = `---
+name: payslip-checker
+description: Checks payroll calculations in a change: BigDecimal for money, HALF_UP rounding, null amounts. Use after editing anything in com.payflow.payroll. Read-only.
+tools: Read, Grep, Glob, Bash
+model: haiku
+---
+
+You check payroll calculations in PayFlow HR. You read code; you never edit it.
+
+## Steps
+1. Run \`git diff\` and list the changed files in com.payflow.payroll.
+2. In each one, find every amount: pay, tax, overtime, bonus, deductions.
+3. Check: BigDecimal (never double), setScale(2, RoundingMode.HALF_UP), null handled.
+
+## Rules
+- Point to file:line and say which input breaks it.
+- Not sure? Say so. Don't invent problems.
+
+## Output
+PASS or FAIL on the first line, then one line per problem.`;
+---
+<Base title="How it works" description="Where each Claude Code resource acts in a session, what is inside an agent file, and real terminal sessions of agents and hooks at work.">
+  <section class="page-head wrap">
+    <p class="crumbs"><a href={url()}>Home</a> / How it works</p>
+    <h1 class="h1">How it works</h1>
+    <p class="lead">Where each kind of resource plugs into a session, what an agent file is made of, and what it looks like in the terminal.</p>
+    <nav class="toc" aria-label="On this page">
+      <a href="#session">1 · Where each resource acts</a>
+      <a href="#anatomy">2 · What's inside an agent</a>
+      <a href="#run">3 · See them run</a>
+      <a href="#make">4 · Make your own</a>
+    </nav>
+  </section>
+
+  <section class="section" id="session" aria-labelledby="session-h">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <h2 class="h2" id="session-h" data-reveal>Where each resource acts</h2>
+          <p class="muted" data-reveal>A session runs in steps. Pick a step to see what plugs in there: hooks guard tool calls, agents take a job, MCP servers are the tools.</p>
+        </div>
+      </div>
+      <div data-reveal><SessionBar /></div>
+    </div>
+  </section>
+
+  <section class="section" id="anatomy" aria-labelledby="anatomy-h">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <h2 class="h2" id="anatomy-h" data-reveal>What's inside an agent</h2>
+          <p class="muted" data-reveal>An agent is one Markdown file in <code>.claude/agents/</code>. Settings on top, its instructions below. Here is our code-reviewer, part by part.</p>
+        </div>
+      </div>
+
+      <div class="key" data-reveal>
+        <p class="key-k mono">The one thing to know</p>
+        <p>"You never edit files" in the prompt is <b>advice</b>: Claude usually follows it. Leaving Edit and Write out of <code>tools:</code> is a <b>rule</b>: the agent cannot edit, whatever it decides. Write both.</p>
+      </div>
+
+      <div data-reveal><AgentAnatomy slug="code-reviewer" /></div>
+
+      <h3 class="h3">Three agents, three levels of trust</h3>
+      <div class="table-wrap" data-reveal>
+        <table class="cmp">
+          <thead><tr><th scope="col">Agent</th><th scope="col">Its job</th><th scope="col">tools:</th><th scope="col">Can edit?</th><th scope="col">model:</th><th scope="col">What keeps it in line</th></tr></thead>
+          <tbody>
+            {compare.map((c) => (
+              <tr>
+                <th scope="row"><a href={url(`resources/${c.id}`)}>{c.id}</a></th>
+                <td>{c.job}</td>
+                <td class="mono">{c.tools}</td>
+                <td><span class:list={['yn', { yes: c.edits }]}>{c.edits ? 'Yes' : 'No'}</span></td>
+                <td class="mono">{c.model}</td>
+                <td>{c.guard}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="muted small">An agent does not see your chat. It gets its own instructions, your CLAUDE.md, and the job Claude writes for it, so it starts with a clean, focused context.</p>
+    </div>
+  </section>
+
+  <section class="section" id="run" aria-labelledby="run-h">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <h2 class="h2" id="run-h" data-reveal>See them run</h2>
+          <p class="muted" data-reveal>Sessions on the PayFlow HR sample. We planted three bugs in a small change to <code>Payslip.java</code>, then asked two agents for help.</p>
+        </div>
+      </div>
+      <div class="terms">
+        <Terminal {...DEMOS['code-reviewer']} />
+        <Terminal {...DEMOS['implementer']} />
+      </div>
+      <h3 class="h3">And when a hook says no</h3>
+      <div class="terms">
+        <Terminal {...DEMOS['block-dangerous-commands']} />
+        <Terminal {...DEMOS['secret-guard']} />
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="make" aria-labelledby="make-h">
+    <div class="wrap make">
+      <div>
+        <h2 class="h2" id="make-h" data-reveal>Make your own</h2>
+        <ol class="steps-list">
+          <li>Save a file like this as <code>.claude/agents/payslip-checker.md</code>, or type <code>/agents</code> in Claude Code and choose to create one.</li>
+          <li>Write the <b>description</b> for Claude: what it does and when to use it.</li>
+          <li>Give it the <b>fewest tools</b> it needs. Read-only? Leave out Edit and Write.</li>
+          <li>Pick <b>haiku</b> for simple checks. It is quicker and cheaper.</li>
+          <li>Write the prompt as a role, numbered steps, rules and a fixed output.</li>
+          <li>Start a new session, then ask: <code>use the payslip-checker agent</code>.</li>
+        </ol>
+        <p class="muted small">Want a head start? Our <a href={url('types/agent')}>agents</a> are free to download and change.</p>
+      </div>
+      <div><Code label="Agent file" code={template} /></div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .toc { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+  .toc a { padding: 8px 14px; border: 1px solid var(--line-strong); border-radius: 999px; text-decoration: none; font-size: 14px; font-weight: 600; background: var(--surface); }
+  .toc a:hover { border-color: var(--accent); color: var(--accent); }
+  .key { border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 0 var(--r) var(--r) 0; padding: 16px 20px; margin-bottom: 24px; max-width: 80ch; }
+  .key-k { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--accent); margin: 0 0 4px; }
+  .key p:last-child { margin: 0; }
+  .h3 { font-size: 1.25rem; font-weight: 700; font-stretch: 104%; margin: 48px 0 16px; }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); }
+  .cmp { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 720px; }
+  .cmp th, .cmp td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .cmp thead th { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; }
+  .cmp tbody tr:last-child > * { border-bottom: 0; }
+  .cmp th a { color: var(--accent); font-family: var(--mono); }
+  .cmp .mono { font-size: 13px; }
+  .yn { display: inline-block; padding: 2px 8px; border-radius: 999px; background: var(--sunk); font-size: 12px; font-weight: 600; }
+  .yn.yes { background: var(--accent); color: var(--accent-ink); }
+  .small { font-size: 14px; margin-top: 14px; }
+  .terms { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); gap: 20px; align-items: start; }
+  .make { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: clamp(28px, 5vw, 64px); align-items: start; }
+  .steps-list { margin: 20px 0 0; padding-left: 1.3em; display: grid; gap: 10px; line-height: 1.55; }
+  @media (max-width: 900px) { .make { grid-template-columns: minmax(0, 1fr); } }
+</style>

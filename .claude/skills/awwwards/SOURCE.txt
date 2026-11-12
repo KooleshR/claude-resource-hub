@@ -1,0 +1,1 @@
+Source: https://github.com/juliobsz/skills @ add880b (2026-10-26), MIT. Reviewed before copying: scripts make no shell calls; network only to Google Fonts/Fontshare, picsum, jsDelivr (axe-core, sha384-checked) and 127.0.0.1.

@@ -1,0 +1,42 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import ResourceList from '../../components/ResourceList.astro';
+import { TYPES, TYPE_KEYS, url } from '../../data/site';
+
+export function getStaticPaths() {
+  return TYPE_KEYS.map((type) => ({ params: { type } }));
+}
+const { type } = Astro.params as { type: keyof typeof TYPES };
+const entries = (await getCollection('resources')).filter((e) => e.data.type === type);
+---
+<Base title={TYPES[type].label} description={TYPES[type].blurb}>
+  <section class="page-head wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href={url('resources')}>Resources</a><span aria-hidden="true">/</span><span aria-current="page">{TYPES[type].label}</span></nav>
+    <h1 class="h1">{TYPES[type].label}</h1>
+    <p class="lead">{TYPES[type].blurb}</p>
+    <dl class="explain">
+      <div><dt>What it is</dt><dd>{TYPES[type].what}</dd></div>
+      <div><dt>Where it lives</dt><dd>{TYPES[type].where}</dd></div>
+      <div><dt>Use it when</dt><dd>{TYPES[type].when}</dd></div>
+    </dl>
+    <nav class="type-tabs" aria-label="Other types">
+      {TYPE_KEYS.map((t) => <a href={url(`types/${t}`)} aria-current={t === type ? 'page' : undefined}>{TYPES[t].label}</a>)}
+    </nav>
+  </section>
+  <section class="wrap" style="padding-bottom:96px">
+    <ResourceList entries={entries} hide={['type']} />
+  </section>
+</Base>
+
+<style>
+  .explain { margin: 28px 0 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; max-width: 1040px; background: var(--line); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .explain div { background: var(--surface); padding: 16px 18px; }
+  .explain dt { font: 600 12px/1.2 var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--accent); margin-bottom: 8px; }
+  .explain dd { margin: 0; font-size: 15px; line-height: 1.55; }
+  @media (max-width: 760px) { .explain { grid-template-columns: minmax(0, 1fr); } }
+  .type-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 24px; }
+  .type-tabs a { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); text-decoration: none; font-size: 14px; color: var(--muted); transition: background-color .2s, color .2s; }
+  .type-tabs a:hover { color: var(--ink); background: var(--surface); }
+  .type-tabs a[aria-current='page'] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+</style>

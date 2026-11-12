@@ -1,0 +1,48 @@
+---
+import Base from '../layouts/Base.astro';
+import { url } from '../data/site';
+
+const terms: [string, string, string?][] = [
+  ['Agent (subagent)', 'A helper with its own context, tools and instructions. Claude hands it one job and gets a summary back, so the main session stays small.', 'types/agent'],
+  ['Checkpoint', 'A snapshot Claude Code takes before each prompt. /rewind or Esc Esc restores it.', 'resources/rewind'],
+  ['CLAUDE.md', 'A markdown file of project instructions Claude reads at the start of every session.', 'templates'],
+  ['Context window', 'Everything Claude can see at once: the conversation, files it read, tool results. When it fills up, quality drops.', 'resources/context'],
+  ['Exit code 2', 'What a hook returns to block an action. Its error message goes back to Claude.', 'types/hook'],
+  ['Harness', 'The way you run Claude Code: interactive terminal, plan mode, headless with -p, or in CI.', 'types/harness'],
+  ['Headless', 'Running Claude Code without a person typing: one prompt in, one answer out.', 'resources/headless'],
+  ['Hook', 'A script Claude Code runs at a session event, like before a tool call or when Claude stops.', 'types/hook'],
+  ['Marketplace', 'A git repo that lists plugins. Add one with /plugin marketplace add owner/repo.', 'resources/plugin'],
+  ['Matcher', 'The part of a hook setting that says which tools it watches, like Bash|PowerShell.'],
+  ['MCP', 'Model Context Protocol. A standard way to give Claude tools from outside: docs, GitHub, a browser, a database.', 'types/mcp'],
+  ['Permission mode', 'How much Claude may do without asking. Plan mode only reads; other modes allow edits with or without prompts.', 'resources/permission-modes'],
+  ['Plugin', 'A bundle of commands, agents, skills, hooks and MCP servers that installs in one step.', 'types/plugin'],
+  ['Skill', 'A folder with a SKILL.md file of instructions (and sometimes scripts). Claude loads it when the task matches its description.', 'types/skill'],
+  ['Slash command', 'A command you type in a session, starting with /.', 'types/command'],
+  ['Trusted folder', 'A folder you accepted at the trust prompt. Project hooks, including hooks in agent files, only run in trusted folders.'],
+];
+---
+<Base title="Glossary" description="Plain definitions of Claude Code terms: agents, skills, hooks, MCP, plugins, checkpoints, permission modes.">
+  <section class="page-head wrap">
+    <h1 class="h1">Glossary</h1>
+    <p class="lead">The words this site uses, in one line each.</p>
+  </section>
+  <section class="wrap" style="padding-bottom:96px">
+    <dl class="gloss">
+      {terms.map(([t, d, link]) => (
+        <div data-reveal>
+          <dt id={t.toLowerCase().replace(/[^a-z0-9]+/g, '-')}>{t}</dt>
+          <dd>{d} {link && <a href={url(link)}>More →</a>}</dd>
+        </div>
+      ))}
+    </dl>
+  </section>
+</Base>
+
+<style>
+  .gloss { margin: 0; border-top: 1px solid var(--line); }
+  .gloss div { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 8fr); gap: 24px; padding: 18px 4px; border-bottom: 1px solid var(--line); }
+  dt { font-weight: 700; font-stretch: 104%; }
+  dd { margin: 0; color: var(--muted); max-width: 70ch; }
+  dd a { color: var(--accent); white-space: nowrap; text-underline-offset: 3px; }
+  @media (max-width: 640px) { .gloss div { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
+</style>

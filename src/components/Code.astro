@@ -1,0 +1,31 @@
+---
+/** A copyable code block. Pass `code`, or `powershell` + `bash` for a shell-tabbed block. */
+interface Props { code?: string; powershell?: string; bash?: string; label?: string; }
+const { code, powershell, bash, label = 'Code' } = Astro.props;
+const tabbed = powershell !== undefined && bash !== undefined && powershell !== bash;
+const single = code ?? powershell ?? bash ?? '';
+const id = `c${Math.random().toString(36).slice(2, 8)}`;
+---
+{tabbed ? (
+  <div class="code" data-shell-tabs>
+    <div class="tabs" role="tablist" aria-label={`${label}: choose your shell`}>
+      <button type="button" role="tab" id={`${id}-ps`} aria-controls={`${id}-ps-p`} aria-selected="true" data-shell="powershell">PowerShell</button>
+      <button type="button" role="tab" id={`${id}-sh`} aria-controls={`${id}-sh-p`} aria-selected="false" tabindex="-1" data-shell="bash">Bash</button>
+    </div>
+    <div class="panel" role="tabpanel" id={`${id}-ps-p`} aria-labelledby={`${id}-ps`} data-shell-panel="powershell">
+      <button type="button" class="copy" data-copy>Copy</button>
+      <pre><code>{powershell}</code></pre>
+    </div>
+    <div class="panel" role="tabpanel" id={`${id}-sh-p`} aria-labelledby={`${id}-sh`} data-shell-panel="bash" hidden>
+      <button type="button" class="copy" data-copy>Copy</button>
+      <pre><code>{bash}</code></pre>
+    </div>
+  </div>
+) : (
+  <div class="code">
+    <div class="panel">
+      <button type="button" class="copy" data-copy aria-label={`Copy ${label.toLowerCase()}`}>Copy</button>
+      <pre style="padding-right:80px"><code>{single}</code></pre>
+    </div>
+  </div>
+)}

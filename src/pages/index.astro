@@ -1,0 +1,133 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Card from '../components/Card.astro';
+import Terminal from '../components/Terminal.astro';
+import { TYPES, TYPE_KEYS, STACK_KEYS, url } from '../data/site';
+import { DEMOS } from '../data/terminals';
+
+const all = await getCollection('resources');
+const start = all.filter((e) => e.data.start).sort((a, b) => a.data.start! - b.data.start!);
+const featured = all.filter((e) => e.data.featured);
+const countType = (t: string) => all.filter((e) => e.data.type === t).length;
+---
+<Base>
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+      <h1 class="display">
+        <span class="line" data-hero-line><span>Every Claude Code</span></span>
+        <span class="line" data-hero-line><span>resource, and the</span></span>
+        <span class="line" data-hero-line><span>moment it acts.</span></span>
+      </h1>
+      <p class="lead" data-reveal>Commands, agents, skills, hooks, MCP servers, plugins and ways to run Claude Code. Each one with what it does, the install line for PowerShell or Bash, the command to run and a real example.</p>
+      <form class="hero-search" data-hero-search role="search" data-reveal>
+        <label class="sr-only" for="hero-q">Search resources</label>
+        <span class="slash mono" aria-hidden="true">/</span>
+        <input id="hero-q" name="q" type="search" placeholder="Search: review, hook, spring, rewind…" autocomplete="off" />
+        <button class="btn" type="submit">Search</button>
+      </form>
+      <p class="stats muted" data-reveal>
+        <span><b>{all.length}</b> resources</span><span><b>{TYPE_KEYS.length}</b> types</span><span><b>{STACK_KEYS.length - 1}</b> stacks</span><span>Press <kbd class="kbd">/</kbd> anywhere to search</span>
+      </p>
+      </div>
+      <div class="hero-term" data-reveal>
+        <Terminal {...DEMOS.hero} compact />
+        <a class="link-more" href={url('how-it-works')}>How it works: agents, hooks and the session →</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="start-h">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <h2 class="h2" id="start-h" data-reveal>Start here</h2>
+          <p class="muted" data-reveal>New to Claude Code? Five steps, in order. Or follow the <a href={url('guides/first-hour')}>first hour guide</a>, and see <a href={url('how-it-works')}>how it works</a>.</p>
+        </div>
+      </div>
+      <ol class="steps">
+        {start.map((e, i) => (
+          <li data-reveal>
+            <a href={url(`resources/${e.id}`)}>
+              <span class="n mono">0{i + 1}</span>
+              <span class="t">{e.data.title}</span>
+              <span class="s">{e.data.summary}</span>
+            </a>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="types-h">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="h2" id="types-h" data-reveal>Browse by type</h2>
+        <a class="link-more" href={url('resources')}>All {all.length} resources →</a>
+      </div>
+      <ul class="types">
+        {TYPE_KEYS.map((t) => (
+          <li data-reveal>
+            <a href={url(`types/${t}`)}>
+              <span class="tn">{TYPES[t].label}</span>
+              <span class="tc mono">{countType(t)}</span>
+              <span class="tb">{TYPES[t].blurb}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="feat-h">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="h2" id="feat-h" data-reveal>Worth installing first</h2>
+        <a class="link-more" href={url('resources')}>See everything →</a>
+      </div>
+      <div class="grid">
+        {featured.map((e) => <Card entry={e} />)}
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero { padding-block: clamp(56px, 10vw, 128px) clamp(40px, 6vw, 72px); }
+  .hero h1 { max-width: 15ch; }
+  .hero-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: clamp(32px, 5vw, 72px); align-items: center; }
+  .hero-term { display: flex; flex-direction: column; gap: 14px; }
+  .hero-term .link-more { align-self: flex-start; font-size: 14px; }
+  @media (min-width: 1101px) { .hero-grid h1 { max-width: none; font-size: clamp(40px, 4.1vw, 66px); } .hero-grid h1 .line { white-space: nowrap; } }
+  @media (max-width: 1100px) { .hero-grid { grid-template-columns: minmax(0, 1fr); } .hero-term { max-width: 640px; } }
+  @media (max-width: 600px) { .hero-term { display: none; } }
+  .line { display: block; overflow: hidden; padding-bottom: 0.06em; }
+  .line > span { display: block; }
+  .hero .lead { margin-top: 28px; }
+  .hero-search { margin-top: 32px; display: flex; align-items: center; gap: 10px; max-width: 640px; padding: 6px 6px 6px 16px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 12px; box-shadow: var(--shadow); transition: box-shadow .3s, border-color .3s; }
+  .hero-search:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft), var(--shadow); }
+  .hero-search .slash { color: var(--accent); font-size: 20px; }
+  .hero-search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font: 500 17px/1.4 var(--sans); color: var(--ink); padding: 8px 0; }
+  .stats { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 15px; }
+  .stats b { color: var(--ink); font-weight: 700; }
+
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+  .steps a { display: flex; flex-direction: column; gap: 8px; height: 100%; padding: 20px; border-radius: var(--r); border: 1px solid var(--line); background: var(--surface); text-decoration: none; transition: transform .35s var(--ease-out), box-shadow .35s, border-color .2s; }
+  .steps a:hover { transform: translateY(-4px); box-shadow: var(--shadow-lift); border-color: var(--accent); }
+  .steps .n { color: var(--accent); font-size: 13px; }
+  .steps .t { font-weight: 700; font-size: 1.125rem; font-stretch: 104%; }
+  .steps .s { color: var(--muted); font-size: 14px; line-height: 1.45; }
+  @media (max-width: 980px) { .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 520px) { .steps { grid-template-columns: minmax(0, 1fr); } }
+
+  .types { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+  .types a { display: grid; grid-template-columns: minmax(0, 4fr) 60px minmax(0, 7fr); align-items: baseline; gap: 16px; padding: 18px 4px; border-bottom: 1px solid var(--line); text-decoration: none; transition: padding .35s var(--ease-out), background-color .25s; }
+  .types a:hover { padding-left: 16px; background: var(--surface); }
+  .types .tn { font-size: clamp(1.25rem, 2.2vw, 1.75rem); font-weight: 750; font-stretch: 108%; letter-spacing: -0.02em; transition: font-stretch .35s var(--ease-out); }
+  .types a:hover .tn { font-stretch: 118%; }
+  .types .tc { color: var(--accent); }
+  .types .tb { color: var(--muted); }
+  @media (max-width: 720px) { .types a { grid-template-columns: 1fr auto; } .types .tb { grid-column: 1 / -1; } }
+
+</style>

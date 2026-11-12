@@ -1,0 +1,40 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { url } from '../../data/site';
+
+const guides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order);
+---
+<Base title="Guides" description="Short, hands-on guides that put several Claude Code resources together on one example project.">
+  <section class="page-head wrap">
+    <h1 class="h1">Guides</h1>
+    <p class="lead">Short walkthroughs on one example project, PayFlow HR, a payroll app in Java and JSF. Each one strings several resources together.</p>
+  </section>
+  <section class="wrap" style="padding-bottom:96px">
+    <ol class="guides">
+      {guides.map((g, i) => (
+        <li data-reveal>
+          <a href={url(`guides/${g.id}`)}>
+            <span class="n mono">0{i + 1}</span>
+            <span class="body">
+              <span class="t">{g.data.title}</span>
+              <span class="s">{g.data.summary}</span>
+            </span>
+            <span class="m muted">{g.data.minutes} min</span>
+          </a>
+        </li>
+      ))}
+    </ol>
+  </section>
+</Base>
+
+<style>
+  .guides { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+  .guides a { display: grid; grid-template-columns: 56px 1fr auto; gap: 20px; align-items: baseline; padding: 28px 4px; border-bottom: 1px solid var(--line); text-decoration: none; transition: padding .35s var(--ease-out), background-color .25s; }
+  .guides a:hover { padding-left: 16px; background: var(--surface); }
+  .n { color: var(--accent); }
+  .body { display: grid; gap: 6px; }
+  .t { font-size: clamp(1.25rem, 2.2vw, 1.75rem); font-weight: 750; font-stretch: 106%; letter-spacing: -0.02em; }
+  .s { color: var(--muted); max-width: 64ch; }
+  @media (max-width: 600px) { .guides a { grid-template-columns: minmax(0, 1fr); gap: 6px; } }
+</style>

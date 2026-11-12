@@ -1,0 +1,61 @@
+---
+import Base from '../layouts/Base.astro';
+import Code from '../components/Code.astro';
+import { withFiles, url } from '../data/site';
+
+const raw = import.meta.glob('../../resources-src/claude-md/*.md', { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
+const NAMES: Record<string, string> = {
+  'java-spring-jsf': 'Java · Spring · JSF', react: 'React', angular: 'Angular', astro: 'Astro', dotnet: '.NET', python: 'Python', node: 'Node',
+};
+const order = Object.keys(NAMES);
+const templates = Object.entries(raw)
+  .map(([path, text]) => {
+    const id = path.split('/').pop()!.replace('.md', '');
+    return { id, name: NAMES[id] ?? id, text, title: text.split('\n')[0].replace(/^#\s*/, ''), lines: text.split('\n').length };
+  })
+  .sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
+---
+<Base title="CLAUDE.md templates" description="Ready CLAUDE.md files for Java/Spring/JSF, React, Angular, Astro, .NET, Python and Node projects.">
+  <section class="page-head wrap">
+    <h1 class="h1">CLAUDE.md templates</h1>
+    <p class="lead">Claude reads <code>CLAUDE.md</code> at the start of every session. Start from one of these instead of a blank file, then change the commands and rules to match your project. Or run <a href={url('resources/init')}>/init</a> and merge.</p>
+  </section>
+  <section class="wrap" style="padding-bottom:96px">
+    <div class="tpls">
+      {templates.map((t) => (
+        <details class="tpl" data-reveal>
+          <summary>
+            <span class="tn">{t.name}</span>
+            <span class="muted">{t.title}</span>
+            <span class="mono muted tl">{t.lines} lines</span>
+          </summary>
+          <div class="tpl-body">
+            <p class="label">Download into your project root</p>
+            <Code label="Download"
+              powershell={withFiles(`irm {files}/claude-md/${t.id}.md -OutFile CLAUDE.md`)}
+              bash={withFiles(`curl -fsSL {files}/claude-md/${t.id}.md -o CLAUDE.md`)} />
+            <p class="label" style="margin-top:20px">Preview</p>
+            <div class="code"><pre class="preview"><code>{t.text}</code></pre></div>
+          </div>
+        </details>
+      ))}
+    </div>
+  </section>
+</Base>
+
+<style>
+  .lead code { font-size: .9em; }
+  .lead a { color: var(--accent); }
+  .tpls { border-top: 1px solid var(--line); }
+  .tpl { border-bottom: 1px solid var(--line); }
+  .tpl summary { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 6fr) auto; gap: 16px; align-items: baseline; padding: 22px 4px; cursor: pointer; list-style: none; transition: padding .35s var(--ease-out), background-color .25s; }
+  .tpl summary::-webkit-details-marker { display: none; }
+  .tpl summary:hover { padding-left: 14px; background: var(--surface); }
+  .tpl[open] summary { background: var(--surface); }
+  .tn { font-size: 1.25rem; font-weight: 750; font-stretch: 106%; }
+  .tl { font-size: 13px; }
+  .tpl-body { padding: 8px 4px 32px; }
+  .label { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 10px; }
+  .preview { margin: 0; padding: 16px 18px; max-height: 420px; overflow: auto; white-space: pre-wrap; }
+  @media (max-width: 700px) { .tpl summary { grid-template-columns: 1fr auto; } .tpl summary .muted:not(.tl) { display: none; } }
+</style>

@@ -1,0 +1,16 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import ResourceList from '../../components/ResourceList.astro';
+
+const all = await getCollection('resources');
+---
+<Base title="All resources" description={`All ${all.length} Claude Code resources, filterable by type, stack and who made them.`}>
+  <section class="page-head wrap">
+    <h1 class="h1">All resources</h1>
+    <p class="lead">Filter by type, stack or who made it. Pick a card for install and run commands. <span class="nowrap">Press <kbd class="kbd">/</kbd> to search.</span></p>
+  </section>
+  <section class="wrap" style="padding-bottom:96px">
+    <ResourceList entries={all} />
+  </section>
+</Base>

@@ -1,0 +1,44 @@
+---
+import Base from '../layouts/Base.astro';
+import Code from '../components/Code.astro';
+const example = `---
+title: "my-resource"
+type: skill            # command | agent | skill | hook | mcp | plugin | harness
+origin: community      # official | community | ours
+step: prompt           # setup | start | prompt | agent | pre | tool | post | stop
+stacks: ["java"]       # or ["all"]
+summary: "One sentence: what it does."
+whenToUse: "One sentence: when you would reach for it."
+install:
+  powershell: "npx skills add owner/repo --skill my-resource -a claude-code"
+  bash: "npx skills add owner/repo --skill my-resource -a claude-code"
+run: "/my-resource"
+source: "https://github.com/owner/repo"
+licence: "MIT"
+related: ["code-review"]
+lastVerified: "2026-11-12"
+---
+
+## What it does
+## Example
+## Notes`;
+---
+<Base title="Contribute" description="How to add a Claude Code resource to the hub: one markdown file per resource.">
+  <section class="page-head wrap">
+    <h1 class="h1">Add a resource</h1>
+    <p class="lead">Each resource is one markdown file in <code>src/content/resources/</code>. Copy this, fill it in, and open a pull request.</p>
+  </section>
+  <section class="wrap" style="padding-bottom:96px; max-width: 860px; margin-inline: 0 auto;">
+    <Code label="Entry template" code={example} />
+    <div class="prose" style="margin-top:36px">
+      <h2>Before you open the PR</h2>
+      <ul>
+        <li>Install it and run it yourself. Write the date in <code>lastVerified</code>.</li>
+        <li>Take the install command from the official source, not from a listing site.</li>
+        <li>Keep examples generic. No company names, no real data.</li>
+        <li>If it runs scripts or needs extra software (Python, Playwright), say so in Notes.</li>
+        <li>Run <code>npm run build</code>. A wrong field fails the build with a clear message.</li>
+      </ul>
+    </div>
+  </section>
+</Base>

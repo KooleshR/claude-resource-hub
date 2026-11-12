@@ -1,0 +1,64 @@
+---
+import Base from '../layouts/Base.astro';
+import { url } from '../data/site';
+
+interface Place { name: string; by: string; href: string; what: string; cmd?: string; note: string; }
+const places: Place[] = [
+  { name: 'Claude Code docs', by: 'Anthropic', href: 'https://code.claude.com/docs/en/overview',
+    what: 'The official reference: settings, permissions, hooks, skills, agents, MCP, plugins.',
+    cmd: '/help', note: 'Commands change between versions. When this site and the docs disagree, trust the docs.' },
+  { name: 'claude-plugins-official', by: 'Anthropic', href: 'https://github.com/anthropics/claude-plugins-official',
+    what: 'The official plugin marketplace. It is already added in Claude Code, so you can install from it straight away.',
+    cmd: '/plugin', note: 'Open the Discover tab in /plugin to browse it.' },
+  { name: 'anthropics/skills', by: 'Anthropic', href: 'https://github.com/anthropics/skills',
+    what: 'Anthropic\'s own skills: frontend-design, skill-creator, webapp-testing, mcp-builder and the document skills.',
+    cmd: 'npx skills add anthropics/skills --list', note: 'Read a few SKILL.md files here before writing your own.' },
+  { name: 'skills.sh', by: 'Vercel', href: 'https://skills.sh',
+    what: 'An open directory of skills with search and install counts, and the npx skills command used on this site.',
+    cmd: 'npx skills find testing', note: 'Ranked by installs, not by a security check. Read a skill before you add it.' },
+  { name: 'mattpocock/skills', by: 'Matt Pocock', href: 'https://github.com/mattpocock/skills',
+    what: 'Skills for a plan-then-build workflow: grill-me, to-spec, to-tickets, tdd, diagnosing-bugs, handoff.',
+    cmd: 'npx skills add mattpocock/skills', note: 'Pick a few. You do not need all of them.' },
+  { name: 'awesome-claude-code', by: 'Community', href: 'https://github.com/hesreallyhim/awesome-claude-code',
+    what: 'A long curated list of skills, hooks, commands, agent setups and plugins.',
+    note: 'Use it to find an idea or a template, not to install everything.' },
+];
+---
+<Base title="Where to find more" description="Where to find more Claude Code skills, plugins, agents and hooks: the official docs and marketplace, anthropics/skills, skills.sh and community lists.">
+  <section class="page-head wrap">
+    <p class="crumbs"><a href={url('resources')}>Resources</a> / Find more</p>
+    <h1 class="h1">Where to find more</h1>
+    <p class="lead">This site lists what we checked. These are the places we checked them against, and where to look when you need something we don't have.</p>
+  </section>
+  <section class="wrap" style="padding-bottom:96px">
+    <ul class="places">
+      {places.map((p) => (
+        <li class="place" data-reveal>
+          <div class="head">
+            <h2><a href={p.href} target="_blank" rel="noopener">{p.name} <span aria-hidden="true">↗</span></a></h2>
+            <span class="chip">{p.by}</span>
+          </div>
+          <p>{p.what}</p>
+          {p.cmd && <code class="cmd">{p.cmd}</code>}
+          <p class="note">{p.note}</p>
+        </li>
+      ))}
+    </ul>
+    <div class="prose" style="margin-top:48px; max-width: 720px">
+      <h2>Before you install anything</h2>
+      <p>A skill, hook or plugin runs with your permissions. Read the <a href={url('guides/before-you-install')}>short checklist</a> first.</p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .places { list-style: none; padding: 0; display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
+  .place { border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); padding: 22px; display: flex; flex-direction: column; gap: 10px; }
+  .head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  h2 { font-size: 1.2rem; font-weight: 700; font-stretch: 104%; letter-spacing: -0.01em; }
+  h2 a { color: var(--ink); text-decoration: none; }
+  h2 a:hover { color: var(--accent); }
+  p { color: var(--muted); font-size: 15px; line-height: 1.55; }
+  .cmd { font-family: var(--mono); font-size: 13px; background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; overflow-x: auto; white-space: nowrap; }
+  .note { font-size: 14px; border-top: 1px solid var(--line); padding-top: 10px; margin-top: auto; }
+</style>

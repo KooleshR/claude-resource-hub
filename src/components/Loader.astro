@@ -1,0 +1,24 @@
+---
+interface Props { count: number; }
+const { count } = Astro.props;
+---
+<div class="loader" aria-hidden="true" data-count={count} transition:persist>
+  <div class="loader-inner">
+    <p class="loader-event mono">SessionStart</p>
+    <p class="loader-num"><span data-loader-num>0</span><span class="loader-of">/ {count} resources</span></p>
+    <div class="loader-line"><span data-loader-bar></span></div>
+  </div>
+</div>
+
+<style is:global>
+  .loader { display: none; }
+  html.loading .loader { display: grid; position: fixed; inset: 0; z-index: 200; place-items: center; background: var(--ground); }
+  html.loading body { overflow: hidden; }
+  .loader-inner { width: min(420px, 80vw); }
+  .loader-event { font-size: 13px; color: var(--accent); letter-spacing: .04em; }
+  .loader-num { margin-top: 6px; display: flex; align-items: baseline; gap: 10px; }
+  .loader-num [data-loader-num] { font-size: clamp(56px, 9vw, 96px); font-weight: 800; font-stretch: 115%; letter-spacing: -0.04em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .loader-of { color: var(--muted); }
+  .loader-line { margin-top: 18px; height: 2px; background: var(--line); overflow: hidden; }
+  .loader-line span { display: block; height: 100%; background: var(--ink); transform: scaleX(0); transform-origin: left; }
+</style>

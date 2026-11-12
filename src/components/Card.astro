@@ -1,0 +1,24 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { TYPES, STACKS, ORIGINS, url } from '../data/site';
+
+interface Props { entry: CollectionEntry<'resources'>; reveal?: boolean; }
+const { entry, reveal = true } = Astro.props;
+const d = entry.data;
+const stacks = d.stacks.filter((s) => s !== 'all');
+---
+<a class="card" href={url(`resources/${entry.id}`)}
+  data-reveal={reveal ? '' : undefined}
+  data-type={d.type} data-origin={d.origin} data-stacks={d.stacks.join(' ')}>
+  <span class="go" aria-hidden="true">→</span>
+  <span class="meta" style="margin:0;padding:0">
+    <span class="chip type"><span class="dot" aria-hidden="true"></span>{TYPES[d.type].one}</span>
+    {d.origin === 'ours' && <span class="chip ours">{ORIGINS.ours}</span>}
+  </span>
+  <h3>{d.title}</h3>
+  <p>{d.summary}</p>
+  <span class="meta">
+    {stacks.length ? stacks.slice(0, 3).map((s) => <span class="chip">{STACKS[s]}</span>) : <span class="chip">Any stack</span>}
+    {stacks.length > 3 && <span class="chip">+{stacks.length - 3}</span>}
+  </span>
+</a>

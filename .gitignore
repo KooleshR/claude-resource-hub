@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.astro/
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+.claude/settings.local.json
+*.log
+public/files/
+
+# Private: internal guide (names, company, internal systems)
+docs/claude-code-technical-guide.md
+docs/claude-code-technical-guide/

@@ -1,0 +1,121 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Card from '../../components/Card.astro';
+import Code from '../../components/Code.astro';
+import Terminal from '../../components/Terminal.astro';
+import AgentAnatomy from '../../components/AgentAnatomy.astro';
+import { TYPES, STACKS, STEPS, ORIGINS, url, withFiles } from '../../data/site';
+import { DEMOS } from '../../data/terminals';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+
+export async function getStaticPaths() {
+  const all = await getCollection('resources');
+  return all.map((entry) => ({ params: { slug: entry.id }, props: { entry, all } }));
+}
+const { entry, all } = Astro.props;
+const d = entry.data;
+const { Content } = await render(entry);
+const related = d.related.map((id) => all.find((e) => e.id === id)).filter(Boolean) as typeof all;
+const stacks = d.stacks.filter((s) => s !== 'all');
+const demo = d.demo ? DEMOS[d.demo] : undefined;
+if (d.demo && !demo) throw new Error(`${entry.id}: unknown demo "${d.demo}"`);
+const hasAgentFile = d.type === 'agent' && d.origin === 'ours' && existsSync(join(process.cwd(), 'resources-src', 'agents', `${entry.id}.md`));
+---
+<Base title={d.title} description={d.summary}>
+  <article class="wrap detail">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href={url('resources')}>Resources</a><span aria-hidden="true">/</span>
+      <a href={url(`types/${d.type}`)}>{TYPES[d.type].label}</a><span aria-hidden="true">/</span>
+      <span aria-current="page">{d.title}</span>
+    </nav>
+
+    <header class="d-head">
+      <div class="d-chips">
+        <a class="chip type" href={url(`types/${d.type}`)}><span class="dot" aria-hidden="true"></span>{TYPES[d.type].one}</a>
+        <span class={`chip ${d.origin === 'ours' ? 'ours' : ''}`}>{ORIGINS[d.origin]}</span>
+        <span class="chip mono">{STEPS[d.step].event}</span>
+      </div>
+      <h1 class="h1" transition:name={`t-${entry.id}`}>{d.title}</h1>
+      <p class="lead">{d.summary}</p>
+    </header>
+
+    <div class="d-body">
+      <div class="d-main">
+        <section aria-labelledby="when-h" class="block">
+          <h2 id="when-h" class="label">When to use it</h2>
+          <p class="when">{d.whenToUse}</p>
+        </section>
+
+        {d.install && (
+          <section aria-labelledby="install-h" class="block">
+            <h2 id="install-h" class="label">Install</h2>
+            <Code label="Install" powershell={withFiles(d.install.powershell)} bash={withFiles(d.install.bash)} />
+            {d.install.powershell === d.install.bash && d.install.powershell.startsWith('/') && <p class="hint muted">Type this inside a Claude Code session.</p>}
+          </section>
+        )}
+
+        <section aria-labelledby="run-h" class="block">
+          <h2 id="run-h" class="label">{d.install ? 'Run' : 'Run (built in, nothing to install)'}</h2>
+          <Code label="Run" code={d.run} />
+        </section>
+
+        {demo && (
+          <section aria-labelledby="demo-h" class="block">
+            <h2 id="demo-h" class="label">See it run</h2>
+            <Terminal title={demo.title} lines={demo.lines} caption={demo.caption} />
+          </section>
+        )}
+
+        {hasAgentFile && (
+          <section aria-labelledby="inside-h" class="block">
+            <h2 id="inside-h" class="label">What's inside</h2>
+            <p class="hint muted" style="margin:0 0 14px">This is the file you download, part by part. <a href={url('how-it-works') + '#anatomy'}>How agents work →</a></p>
+            <AgentAnatomy slug={entry.id} />
+          </section>
+        )}
+
+        <div class="prose block">
+          <Content />
+        </div>
+      </div>
+
+      <aside class="d-side" aria-label="Details">
+        <dl>
+          <div><dt>Type</dt><dd><a href={url(`types/${d.type}`)}>{TYPES[d.type].one}</a></dd></div>
+          <div><dt>Acts at</dt><dd class="mono">{STEPS[d.step].event}</dd></div>
+          <div><dt>Stacks</dt><dd>{stacks.length ? stacks.map((s, i) => <>{i > 0 && ', '}<a href={url(`stacks/${s}`)}>{STACKS[s]}</a></>) : 'Any stack'}</dd></div>
+          <div><dt>Made by</dt><dd>{ORIGINS[d.origin]}{d.licence && ` · ${d.licence}`}</dd></div>
+          {d.source && <div><dt>Source</dt><dd><a href={d.source} rel="noopener">{new URL(d.source).hostname.replace('www.', '')}{new URL(d.source).pathname.replace(/\/$/, '')}</a></dd></div>}
+          <div><dt>Checked</dt><dd>{d.lastVerified} · Claude Code {d.claudeCodeVersion}</dd></div>
+        </dl>
+      </aside>
+    </div>
+
+    {related.length > 0 && (
+      <section class="related" aria-labelledby="rel-h">
+        <h2 id="rel-h" class="h2">Goes well with</h2>
+        <div class="grid">{related.map((e) => <Card entry={e} />)}</div>
+      </section>
+    )}
+  </article>
+</Base>
+
+<style>
+  .detail { padding-block: clamp(32px, 5vw, 56px) 96px; }
+  .d-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; }
+  .d-head .lead { margin-top: 14px; }
+  .d-body { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: clamp(28px, 5vw, 64px); margin-top: 40px; }
+  .block + .block { margin-top: 36px; }
+  .label { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 12px; }
+  .when { font-size: 1.125rem; max-width: 60ch; }
+  .hint { margin-top: 8px; font-size: 14px; }
+  .d-side dl { position: sticky; top: 88px; margin: 0; padding: 18px 20px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); display: grid; gap: 14px; }
+  .d-side dt { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+  .d-side dd { margin: 2px 0 0; font-size: 15px; overflow-wrap: anywhere; }
+  .d-side a { color: var(--accent); text-underline-offset: 3px; }
+  .related { margin-top: 72px; padding-top: 48px; border-top: 1px solid var(--line); }
+  .related h2 { margin-bottom: 24px; }
+  @media (max-width: 900px) { .d-body { grid-template-columns: minmax(0, 1fr); } .d-side { order: -1; } .d-side dl { position: static; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); } }
+</style>

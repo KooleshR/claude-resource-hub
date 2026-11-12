@@ -1,0 +1,50 @@
+---
+// A drawn terminal window (HTML, not an image): sharp at any size, copyable, searchable.
+// Lines type in when scrolled into view (see terminals() in app.ts); reduced motion shows them at once.
+//   k: 'cmd'    > prompt typed into Claude Code     'sh'   $ shell command
+//      'claude' ● Claude's reply                    'tool' ● a tool or agent call
+//      'out'    ⎿ tool output (indented)            'text' plain line
+//      'ok' | 'warn' | 'err' coloured lines          'dim'  grey line,  'gap' empty line
+export type TermLine = { k: 'cmd' | 'sh' | 'claude' | 'tool' | 'out' | 'text' | 'ok' | 'warn' | 'err' | 'dim' | 'gap'; t?: string };
+interface Props { title?: string; lines: TermLine[]; caption?: string; compact?: boolean; }
+const { title = 'claude', lines, caption, compact = false } = Astro.props;
+const prefix: Record<string, string> = { cmd: '> ', sh: '$ ', claude: '● ', tool: '● ', out: '  ⎿ ' };
+---
+<figure class:list={['term', { compact }]} data-term>
+  <div class="term-bar" aria-hidden="true">
+    <span class="dots"><i></i><i></i><i></i></span>
+    <span class="term-title">{title}</span>
+  </div>
+  <pre class="term-body" tabindex="0" aria-label={`Terminal: ${title}`}>{lines.map((l) => (
+    <span class={`tl ${l.k}`}>{prefix[l.k] && <span class="p" aria-hidden="true">{prefix[l.k]}</span>}<span class="x">{l.t ?? ''}</span>{'\n'}</span>
+  ))}</pre>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<style is:global>
+  .term { --t-bg: #1d1b18; --t-bar: #2a2723; --t-ink: #ece6da; --t-dim: #9a9284; --t-accent: #d9a35b; --t-ok: #9cc58a; --t-warn: #e3c06a; --t-err: #ec8a7a; --t-tool: #8fb4d8;
+    margin: 0; border-radius: 12px; overflow: hidden; background: var(--t-bg); border: 1px solid rgba(0,0,0,.25); box-shadow: var(--shadow-lift); color: var(--t-ink); }
+  :root[data-theme='dark'] .term { border-color: var(--line-strong); }
+  .term-bar { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--t-bar); }
+  .term-bar .dots { display: flex; gap: 6px; }
+  .term-bar .dots i { width: 11px; height: 11px; border-radius: 50%; background: #5b554c; }
+  .term-bar .dots i:first-child { background: #d8705f; } .term-bar .dots i:nth-child(2) { background: #d9a35b; } .term-bar .dots i:last-child { background: #8db27b; }
+  .term-title { font: 500 12px/1 var(--mono); color: var(--t-dim); }
+  .term-body { margin: 0; padding: 16px 18px 18px; font: 13.5px/1.6 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; background: transparent; border: 0; max-height: 520px; overflow-y: auto; }
+  .term.compact .term-body { font-size: 12.5px; padding: 14px 16px; }
+  .term-body:focus-visible { outline: 2px solid var(--t-accent); outline-offset: -2px; }
+  .term .tl { display: block; padding-left: 2ch; text-indent: -2ch; }
+  .term .tl.out { padding-left: 6ch; text-indent: -4ch; color: var(--t-dim); }
+  .term .tl .p { color: var(--t-dim); }
+  .term .tl.cmd { color: #fff; font-weight: 600; } .term .tl.cmd .p { color: var(--t-accent); }
+  .term .tl.sh .p { color: var(--t-ok); }
+  .term .tl.claude .p { color: var(--t-ink); }
+  .term .tl.tool .p { color: var(--t-tool); } .term .tl.tool .x { color: var(--t-tool); }
+  .term .tl.ok { color: var(--t-ok); } .term .tl.warn { color: var(--t-warn); } .term .tl.err { color: var(--t-err); }
+  .term .tl.dim { color: var(--t-dim); }
+  .term .tl.gap { height: .7em; }
+  .term figcaption { padding: 10px 16px; font-size: 13px; color: var(--t-dim); border-top: 1px solid rgba(255,255,255,.07); font-family: var(--sans); }
+  .term.pending .tl { visibility: hidden; }
+  .term .tl.typing .x::after { content: '▌'; color: var(--t-accent); animation: term-blink 1s steps(1) infinite; }
+  @keyframes term-blink { 50% { opacity: 0; } }
+</style>

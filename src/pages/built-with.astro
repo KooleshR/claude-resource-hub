@@ -1,0 +1,27 @@
+---
+import Base from '../layouts/Base.astro';
+import { url } from '../data/site';
+---
+<Base title="How this site was built" description="How Claude Resource Hub was built with Claude Code: research, writing and testing the resources, design, and the Astro build.">
+  <section class="page-head wrap">
+    <h1 class="h1">How this site was built</h1>
+    <p class="lead">Built with Claude Code, using the resources it lists. Every step below used something you can find on this site.</p>
+  </section>
+  <section class="wrap prose" style="padding-bottom:96px">
+    <h2>1. Research</h2>
+    <p>Each resource was checked against the official docs, the official plugin marketplace, or the resource's own repository. Entries we could only find on mirror sites were left out. Every page shows the date it was checked.</p>
+    <h2>2. Our own resources</h2>
+    <p>The agents, skills and hooks marked <strong>Ours</strong> were written for this site and tested on a small Java and JSF payroll app called PayFlow HR, with <code>claude -p</code>. For example, the <a href={url('resources/code-reviewer')}>code-reviewer</a> agent was given a change with a payroll total stored in a <code>double</code>, and caught it.</p>
+    <p>Testing also turned up two things worth knowing, now written on the pages they affect: hooks inside an agent file only run in a trusted folder, and on Windows a command guard must watch both the Bash and the PowerShell tool.</p>
+    <h2>3. Design</h2>
+    <p>The design followed a design skill that asks for one idea, type that does the work, and motion that respects reduced-motion settings. The idea here is the session: every resource acts at a moment in a Claude Code session, which the step bar on the home page shows.</p>
+    <h2>4. Build</h2>
+    <ul>
+      <li><strong>Astro</strong>, static output, with content collections for the resources and guides.</li>
+      <li><strong>Fuse.js</strong> for search, loaded only when you open it.</li>
+      <li><strong>GSAP</strong> and <strong>Lenis</strong> for scroll reveals and smooth scrolling, both off when your system asks for reduced motion.</li>
+      <li><strong>Archivo</strong> and <strong>Geist Mono</strong>, self-hosted.</li>
+      <li>Hosted on <strong>GitHub Pages</strong>.</li>
+    </ul>
+  </section>
+</Base>

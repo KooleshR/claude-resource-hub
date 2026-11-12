@@ -1,0 +1,30 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Card from '../../components/Card.astro';
+import { url } from '../../data/site';
+
+export async function getStaticPaths() {
+  const guides = await getCollection('guides');
+  return guides.map((g) => ({ params: { slug: g.id }, props: { g } }));
+}
+const { g } = Astro.props;
+const { Content } = await render(g);
+const all = await getCollection('resources');
+const uses = g.data.uses.map((id) => all.find((e) => e.id === id)).filter(Boolean) as typeof all;
+---
+<Base title={g.data.title} description={g.data.summary}>
+  <article class="wrap" style="padding-block: clamp(32px,5vw,56px) 96px">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href={url('guides')}>Guides</a><span aria-hidden="true">/</span><span aria-current="page">{g.data.title}</span></nav>
+    <h1 class="h1">{g.data.title}</h1>
+    <p class="lead" style="margin-top:14px">{g.data.summary}</p>
+    <p class="muted" style="margin-top:10px;font-size:14px">{g.data.minutes} minutes · example project: PayFlow HR</p>
+    <div class="prose" style="margin-top:44px"><Content /></div>
+    {uses.length > 0 && (
+      <section style="margin-top:64px;padding-top:44px;border-top:1px solid var(--line)" aria-labelledby="uses-h">
+        <h2 class="h2" id="uses-h" style="margin-bottom:24px">Resources in this guide</h2>
+        <div class="grid">{uses.map((e) => <Card entry={e} />)}</div>
+      </section>
+    )}
+  </article>
+</Base>

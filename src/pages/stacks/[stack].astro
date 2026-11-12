@@ -1,0 +1,24 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import ResourceList from '../../components/ResourceList.astro';
+import { STACKS, STACK_KEYS, url } from '../../data/site';
+
+export function getStaticPaths() {
+  return STACK_KEYS.filter((s) => s !== 'all').map((stack) => ({ params: { stack } }));
+}
+const { stack } = Astro.params as { stack: keyof typeof STACKS };
+const all = await getCollection('resources');
+const specific = all.filter((e) => e.data.stacks.includes(stack));
+const entries = all.filter((e) => e.data.stacks.includes(stack) || e.data.stacks.includes('all'));
+---
+<Base title={`${STACKS[stack]} resources`} description={`Claude Code resources for ${STACKS[stack]} projects, plus the ones that work with any stack.`}>
+  <section class="page-head wrap">
+    <nav class="crumbs" aria-label="Breadcrumb"><a href={url('resources')}>Resources</a><span aria-hidden="true">/</span><span aria-current="page">{STACKS[stack]}</span></nav>
+    <h1 class="h1">{STACKS[stack]}</h1>
+    <p class="lead">{specific.length} made for {STACKS[stack]}, plus {entries.length - specific.length} that work with any stack.</p>
+  </section>
+  <section class="wrap" style="padding-bottom:96px">
+    <ResourceList entries={entries} hide={['stack']} />
+  </section>
+</Base>

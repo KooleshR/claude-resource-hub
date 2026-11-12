@@ -1,0 +1,76 @@
+---
+import { getCollection } from 'astro:content';
+import { STEPS, STEP_KEYS, TYPES, url } from '../data/site';
+
+const all = await getCollection('resources');
+const byStep = Object.fromEntries(STEP_KEYS.map((k) => [k, all.filter((e) => e.data.step === k)]));
+const first = 'pre';
+---
+<div class="session" data-session>
+  <div class="session-track" role="tablist" aria-label="Moments in a Claude Code session">
+    <span class="session-line" aria-hidden="true"><span class="session-fill" data-session-fill></span></span>
+    {STEP_KEYS.map((k, i) => (
+      <button type="button" role="tab" class="session-step" id={`step-${k}`} aria-controls={`step-${k}-panel`}
+        aria-selected={k === first ? 'true' : 'false'} tabindex={k === first ? 0 : -1} data-step={k} data-i={i}>
+        <span class="tick" aria-hidden="true"></span>
+        <span class="step-label">{STEPS[k].label}</span>
+        <span class="step-count">{byStep[k].length}</span>
+      </button>
+    ))}
+  </div>
+
+  {STEP_KEYS.map((k) => (
+    <div class="session-panel" role="tabpanel" id={`step-${k}-panel`} aria-labelledby={`step-${k}`} hidden={k !== first} data-panel={k}>
+      <div class="session-copy">
+        <p class="session-event mono">{STEPS[k].event}</p>
+        <p class="session-text">{STEPS[k].text}</p>
+      </div>
+      <ul class="session-list">
+        {byStep[k].map((e) => (
+          <li>
+            <a href={url(`resources/${e.id}`)}>
+              <span class="k">{TYPES[e.data.type].one}</span>
+              <span class="t">{e.data.title}</span>
+              <span class="s">{e.data.summary}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  ))}
+</div>
+
+<style>
+  .session { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: clamp(18px, 3vw, 32px); }
+  .session-track { position: relative; display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; padding-top: 4px; }
+  .session-line { position: absolute; left: calc(100% / 16); right: calc(100% / 16); top: 15px; height: 2px; background: var(--line); }
+  .session-fill { position: absolute; inset: 0; background: var(--accent); transform-origin: left; transform: scaleX(0); transition: transform .6s var(--ease-out); }
+  .session-step { position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 0 2px 10px; border: 0; background: none; cursor: pointer; color: var(--muted); border-radius: 8px; }
+  .tick { width: 24px; height: 24px; border-radius: 50%; background: var(--surface); border: 2px solid var(--line-strong); display: grid; place-items: center; transition: border-color .3s, transform .35s var(--ease-out); }
+  .tick::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); transform: scale(0); transition: transform .3s var(--ease-out); }
+  .session-step:hover .tick { transform: scale(1.12); border-color: var(--accent); }
+  .session-step[data-passed='true'] .tick { border-color: var(--accent); }
+  .session-step[aria-selected='true'] { color: var(--ink); }
+  .session-step[aria-selected='true'] .tick { border-color: var(--accent); transform: scale(1.18); }
+  .session-step[aria-selected='true'] .tick::after { transform: scale(1); }
+  .step-label { font-weight: 600; font-size: 14px; text-align: center; line-height: 1.2; }
+  .step-count { font: 500 12px/1 var(--mono); }
+  .session-panel { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: clamp(20px, 4vw, 48px); margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--line); }
+  .session-panel[hidden] { display: none; }
+  .session-event { color: var(--accent); font-size: 14px; }
+  .session-text { margin-top: 8px; font-size: 1.125rem; line-height: 1.5; }
+  .session-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .session-list a { display: grid; grid-template-columns: 92px 1fr; gap: 2px 14px; padding: 12px 14px; border-radius: 8px; text-decoration: none; border: 1px solid transparent; transition: background-color .2s, border-color .2s, transform .3s var(--ease-out); }
+  .session-list a:hover { background: var(--ground); border-color: var(--line); transform: translateX(4px); }
+  .session-list .k { grid-row: span 2; font: 500 11px/1.6 var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .session-list .t { font-weight: 650; }
+  .session-list .s { grid-column: 2; color: var(--muted); font-size: 14px; line-height: 1.45; }
+  @media (max-width: 760px) {
+    .session-track { grid-template-columns: repeat(4, 1fr); row-gap: 14px; }
+    .session-line { display: none; }
+    .session-panel { grid-template-columns: minmax(0, 1fr); }
+    .session-list a { grid-template-columns: minmax(0, 1fr); }
+    .session-list .k { grid-row: auto; }
+    .session-list .s { grid-column: 1; }
+  }
+</style>

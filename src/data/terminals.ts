@@ -1,0 +1,107 @@
+import type { TermLine } from '../components/Terminal.astro';
+
+// Drawn terminal sessions. Text is taken from real runs on the PayFlow HR sample project
+// (Claude Code 2.1, November 2026), shortened. Hook messages are the scripts' exact output.
+export interface Demo { title: string; caption: string; lines: TermLine[] }
+
+export const DEMOS: Record<string, Demo> = {
+  'code-reviewer': {
+    title: 'payflow-hr — claude',
+    caption: 'Real run on the PayFlow sample. The change had three planted bugs; the reviewer found all three and edited nothing.',
+    lines: [
+      { k: 'cmd', t: 'use the code-reviewer agent on my changes' },
+      { k: 'tool', t: 'code-reviewer(Review the working-tree change to Payslip.java)' },
+      { k: 'out', t: 'git status · git diff · Read CLAUDE.md · Read Payslip.java' },
+      { k: 'gap' },
+      { k: 'claude', t: 'grossWithExtras throws on every call as written.' },
+      { k: 'gap' },
+      { k: 'err', t: 'Must fix' },
+      { k: 'text', t: '1. Payslip.java:11 · i <= overtime.size() reads one past the end.' },
+      { k: 'dim', t: '   IndexOutOfBoundsException for every input, even an empty list.' },
+      { k: 'text', t: '2. Lines 9-14 · double used for money. CLAUDE.md says BigDecimal.' },
+      { k: 'text', t: '3. Line 14 · total + bonus throws NullPointerException when bonus is null.' },
+      { k: 'warn', t: 'Should fix' },
+      { k: 'text', t: '4. No tests: cover empty list, one line, HALF_UP rounding, null bonus.' },
+      { k: 'gap' },
+      { k: 'claude', t: 'I can fix the three must-fix items and add the tests if you like.' },
+    ],
+  },
+  'implementer': {
+    title: 'payflow-hr — claude',
+    caption: 'Real run, shortened. The implementer read the code, wrote a test-first plan and stopped for approval. No file changed.',
+    lines: [
+      { k: 'cmd', t: 'use the implementer agent: in grossWithExtras, a missing bonus should count as zero' },
+      { k: 'tool', t: 'implementer(Null bonus counts as zero in grossWithExtras)' },
+      { k: 'out', t: 'Read CLAUDE.md · Read Payslip.java · Read pom.xml' },
+      { k: 'gap' },
+      { k: 'claude', t: 'The implementer stopped at its plan step. Nothing was edited.' },
+      { k: 'gap' },
+      { k: 'text', t: 'Found: the loop uses i <= overtime.size(), so it crashes before the bonus line.' },
+      { k: 'text', t: 'Found: double is used for money; CLAUDE.md asks for BigDecimal, HALF_UP.' },
+      { k: 'gap' },
+      { k: 'ok', t: 'Plan: write PayslipTest first' },
+      { k: 'dim', t: '  null bonus      1000.00 + 50.00 + 25.50   -> 1075.50' },
+      { k: 'dim', t: '  bonus 100.00    same inputs               -> 1175.50' },
+      { k: 'dim', t: '  nothing extra   1000.00                   -> 1000.00' },
+      { k: 'ok', t: 'then the smallest fix in Payslip.java.' },
+      { k: 'gap' },
+      { k: 'warn', t: 'Needs your answer: fix the <= loop too? Move to BigDecimal now?' },
+    ],
+  },
+  'hero': {
+    title: 'payflow-hr — claude',
+    caption: 'An agent reviews, a hook guards. Findings and the BLOCKED line are from real runs, shortened.',
+    lines: [
+      { k: 'cmd', t: 'use the code-reviewer agent on my changes' },
+      { k: 'tool', t: 'code-reviewer(Review the change to Payslip.java)' },
+      { k: 'err', t: 'Must fix  Payslip.java:11 · i <= size() reads past the end' },
+      { k: 'err', t: 'Must fix  line 14 · null bonus throws NullPointerException' },
+      { k: 'gap' },
+      { k: 'cmd', t: 'push it' },
+      { k: 'tool', t: 'Bash(git push --force origin main)' },
+      { k: 'out', t: 'BLOCKED by block-dangerous-commands (force push).' },
+      { k: 'claude', t: 'The hook blocked a force push. Pushing normally instead.' },
+    ],
+  },
+  'block-dangerous-commands': {
+    title: 'payflow-hr — claude',
+    caption: 'The hook\'s exact message. Exit code 2 stops the command and Claude reads the reason.',
+    lines: [
+      { k: 'cmd', t: 'my branch is behind, just force push it' },
+      { k: 'tool', t: 'Bash(git push --force origin main)' },
+      { k: 'out', t: 'PreToolUse hook error: BLOCKED by block-dangerous-commands (force push).' },
+      { k: 'out', t: 'Command: git push --force origin main' },
+      { k: 'out', t: 'Push normally, or ask the user to force-push themselves.' },
+      { k: 'gap' },
+      { k: 'claude', t: 'A hook blocked the force push. I can pull and rebase, then push normally, or you can force-push yourself.' },
+    ],
+  },
+  'secret-guard': {
+    title: 'payflow-hr — claude',
+    caption: 'The hook\'s exact message. Claude never gets to write the file.',
+    lines: [
+      { k: 'cmd', t: 'add the Oracle connection settings for local' },
+      { k: 'tool', t: 'Write(src/main/resources/application.properties)' },
+      { k: 'out', t: 'BLOCKED by secret-guard: application.properties would add what looks like a secret.' },
+      { k: 'out', t: '- credential as key=value: db.password=Su**********' },
+      { k: 'out', t: 'Read it from an environment variable (e.g. ${DB_PASSWORD}) instead.' },
+      { k: 'gap' },
+      { k: 'claude', t: 'Using spring.datasource.password=${DB_PASSWORD}. Set DB_PASSWORD in your shell before you run the app.' },
+    ],
+  },
+  'test-runner': {
+    title: 'payflow-hr — claude',
+    caption: 'Illustrative session: the test count is made up. The BLOCKED lines are the hook\'s exact message.',
+    lines: [
+      { k: 'cmd', t: 'use the test-runner agent, and commit if green' },
+      { k: 'tool', t: 'test-runner(Run the test suite)' },
+      { k: 'out', t: 'Bash(./mvnw -q test)' },
+      { k: 'ok', t: '    Tests run: 42, Failures: 0, Errors: 0' },
+      { k: 'out', t: 'Bash(git commit -am "wip")' },
+      { k: 'err', t: '    BLOCKED: the "tester" agent may not run "git commit -am wip".' },
+      { k: 'dim', t: '    Allowed: read-only git and search commands, builds and tests.' },
+      { k: 'gap' },
+      { k: 'claude', t: 'All 42 tests pass. The test-runner is not allowed to commit, so I\'ll do that here if you confirm.' },
+    ],
+  },
+};
